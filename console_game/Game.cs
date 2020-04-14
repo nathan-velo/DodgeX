@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace ConsoleApp1
+namespace console_game
 {
     class Game
     {
         private string DifficultyText;
-        public Game(int winWidth, int winHeight, int Difficulty)
+        private Frame_Buffer GameRender;
+        public Game(int winWidth, int winHeight, int Difficulty, Frame_Buffer GameRender)
         {
+            this.GameRender = GameRender;
             playerUnit = new PlayerUnit(5, (int)(Console.WindowHeight / 2 - 2), "@");
             Random = new Random();
             stopwatch = new Stopwatch();
@@ -43,7 +45,7 @@ namespace ConsoleApp1
 
             stopwatch.Start();
             long timeAtPreviousFrame = stopwatch.ElapsedMilliseconds;
-            int desiredFPS = 60;
+            int desiredFPS = 144;
             int desiredFPSTiming = 1000 / desiredFPS;
             while (true)
             {
@@ -63,17 +65,17 @@ namespace ConsoleApp1
                     }
                 }
 
-                Menu.GameRender.AddToRender(playerUnit.X, playerUnit.Y, playerUnit.UnitGraphic);
+                GameRender.AddToRender(playerUnit.X, playerUnit.Y, playerUnit.UnitGraphic);
                 foreach (EnemyUnit enemyUnit in enemyUnits)
                 {
                     if (enemyUnit.SleepForMS <= 0)
                     {
-                        Menu.GameRender.AddToRender(enemyUnit.X, enemyUnit.Y, enemyUnit.UnitGraphic);
+                        GameRender.AddToRender(enemyUnit.X, enemyUnit.Y, enemyUnit.UnitGraphic);
                     }
                 }
-                Menu.GameRender.AddToRender(0, WinHeight - 1, "SCORE: " + Score);
-                Menu.GameRender.AddToRender(0, WinHeight - 1, "Difficulty: " + DifficultyText, "right");
-                Menu.GameRender.PrintFrame();
+                GameRender.AddToRender(0, WinHeight - 1, "SCORE: " + Score);
+                GameRender.AddToRender(0, WinHeight - 1, "Difficulty: " + DifficultyText, "right");
+                GameRender.PrintFrame();
 
                 if (desiredFPSTiming - frameTimingMS > 0)
                 {
@@ -84,12 +86,12 @@ namespace ConsoleApp1
         void GameOver()
         {
             //Menu.Scores.CheckScores(Score,Difficulty);
-            Menu.GameRender.AddToRender(0, WinHeight / 2, "Final score " + Score, "middle");
-            Menu.GameRender.AddToRender(0, WinHeight / 2 - 1, "Difficulty: " + DifficultyText, "middle");
-            Menu.GameRender.AddToRender(0, WinHeight / 2 - 2, "Game Over!", "middle");
-            Menu.GameRender.AddToRender(0, WinHeight / 3, "Press Enter to play again", "middle");
-            Menu.GameRender.AddToRender(0, WinHeight * 2 / 3 - 2, "Press Escape to exit game", "middle");
-            Menu.GameRender.PrintFrame();
+            GameRender.AddToRender(0, WinHeight / 2, "Final score " + Score, "middle");
+            GameRender.AddToRender(0, WinHeight / 2 - 1, "Difficulty: " + DifficultyText, "middle");
+            GameRender.AddToRender(0, WinHeight / 2 - 2, "Game Over!", "middle");
+            GameRender.AddToRender(0, WinHeight / 3, "Press Enter to play again", "middle");
+            GameRender.AddToRender(0, WinHeight * 2 / 3 - 2, "Press Escape to exit game", "middle");
+            GameRender.PrintFrame();
         }
     }
 }

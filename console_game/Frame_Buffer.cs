@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 
-namespace ConsoleApp1
+namespace console_game
 {
     class Frame_Buffer
     {
@@ -53,15 +53,16 @@ namespace ConsoleApp1
         public void PrintFrame()
         {
             string NewFrame = string.Empty;
-            for (int y = 0; y < Frame.GetLength(1); y++)
+            for (int y = 0; y < WinHeight; y++)
             {
-                for (int x = 0; x < Frame.GetLength(0); x++)
+                for (int x = 0; x < WinWidth; x++)
                 {
-                    NewFrame = NewFrame + Frame[x, y];
+                    NewFrame += Frame[x, y];
                 }
-                if (y < Frame.GetLength(1) - 1)
+                // Add new row as long as it doesn't go below height of the console
+                if (y < WinHeight - 1)
                 {
-                    NewFrame = NewFrame + Environment.NewLine;
+                    NewFrame += Environment.NewLine;
                 }
             }
             Console.CursorVisible = false;

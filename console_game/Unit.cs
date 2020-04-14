@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace ConsoleApp1
+namespace console_game
 {
     abstract class Unit
     {
