@@ -2,14 +2,21 @@
 
 namespace console_game
 {
-    class console_game
+    public enum Centering {
+        left = 0,
+        middle = -1,
+    }
+    class ConsoleGame
     {
+
+        public static int WinWidth;
+        public static int WinHeight;
         public static Frame_Buffer GameRender;
         static void Main()
         {
             // Sets window size
-            int WinWidth = (int)(75);
-            int WinHeight = (int)(45);
+            WinWidth = 75;
+            WinHeight = 45;
             if (Console.LargestWindowHeight < WinHeight) {
                 WinHeight = Console.LargestWindowHeight - 2;
             }
@@ -21,17 +28,14 @@ namespace console_game
 
             GameRender = new Frame_Buffer(WinWidth, WinHeight);
 
-            bool exitGame = true;
-
             //Run the game, game and menu loop
-            Menu GameMenu;
-            GameMenu = new Menu(WinWidth, WinHeight, GameRender);
+            Menu<MenuPages> GameMenu = new Menu<MenuPages>(GameRender);
+            Game game = new Game(WinWidth, WinHeight, 200, GameRender);
             while (true) {
-                GameMenu.DisplayMenu();
-                if (exitGame != true) {
+                bool playGame = GameMenu.StartMenu();
+                if (!playGame) {
                     break;
                 }
-                Game game = new Game(WinWidth, WinHeight, 200, GameRender);
                 game.Run();
                 //StartGame(WinWidth, WinHeight, 200);
             }
@@ -41,28 +45,19 @@ namespace console_game
             Console.SetCursorPosition(0, Console.WindowHeight - 1);
         }
 
-        private void StartGame(int WinWidth, int WinHeight, int enemyNum)
-        {
+        private void StartGame(int WinWidth, int WinHeight, int enemyNum) {
             bool doAgain = true;
-            do
-            {
                 //Game game = new Game(WinWidth, WinHeight, enemyNum);
                 //game.Run();
-                while (true)
-                {
-                    ConsoleKeyInfo userInput = Console.ReadKey(true);
-                    if (userInput.Key == ConsoleKey.Enter)
-                    {
-                        doAgain = true;
-                        break;
-                    }
-                    else if (userInput.Key == ConsoleKey.Escape)
-                    {
-                        doAgain = false;
-                        break;
-                    }
+            while (doAgain) {
+                ConsoleKeyInfo userInput = Console.ReadKey(true);
+                if (userInput.Key == ConsoleKey.Enter) {
+                doAgain = true;
                 }
-            } while (doAgain == true);
+                else if (userInput.Key == ConsoleKey.Escape) {
+                doAgain = false;
+                }
+            }
         }
 
     }

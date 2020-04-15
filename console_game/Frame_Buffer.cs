@@ -12,7 +12,7 @@ namespace console_game
         public int WinWidth { private set; get; }
         public int WinHeight { private set; get; }
         private char[,] Frame;
-
+        string NewFrame;
         public Frame_Buffer(int Width, int Height)
         {
             WinWidth = Width;
@@ -52,7 +52,7 @@ namespace console_game
 
         public void PrintFrame()
         {
-            string NewFrame = string.Empty;
+            NewFrame = string.Empty;
             for (int y = 0; y < WinHeight; y++)
             {
                 for (int x = 0; x < WinWidth; x++)

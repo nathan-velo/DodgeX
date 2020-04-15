@@ -3,70 +3,135 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace console_game
-{
-    class Menu
-    {
-        public static int WinWidth;
-        public static int WinHeight;
+namespace console_game {
+
+    class Menu<T> where T : IPageGroup, new() {
+        public LRUCache<Page> Cache;
         public Frame_Buffer GameRender;
-        private Stack<Page> _menuStack = new Stack<Page>();
-        Dictionary<string,Page> Pages;
+        public IPageGroup PageCatalogue;
+        private Page CurrPage;
+        private Stack<String> _menuStack = new Stack<String>();
 
-        public Menu(int WinWidth, int WinHeight, Frame_Buffer GameRender) {
+        public Menu(Frame_Buffer GameRender, int CacheSize = 5) {
             this.GameRender = GameRender;
-            Menu.WinWidth = WinWidth;
-            Menu.WinHeight = WinHeight;
-            LoadPages();
+            Cache = new LRUCache<Page>(CacheSize);
+            PageCatalogue = new T();
         }
 
-        public void DisplayMenu() {
-            Pages["Home"].AddToDisplay(GameRender);
-            GameRender.PrintFrame();
+        public bool StartMenu() {
+            string PageToDisplay = "Home";
+            CurrPage = GetPage(PageToDisplay);
+            _menuStack.Push(PageToDisplay);
+            return(MenuLoop());
+        }
+
+        public bool MenuLoop() {
+            int MenuPos = 0;
+            int CursorMax = CurrPage.CursorLocations.Length;
             while (true) {
+                CurrPage.AddToDisplay();
+                RenderCursor(MenuPos, CurrPage);
+                GameRender.PrintFrame();
                 ConsoleKeyInfo userInput = Console.ReadKey(true);
-                if (userInput.Key == ConsoleKey.Enter) {
-                    break;
+
+                if ( userInput.Key == ConsoleKey.Enter) {
+                    return true;
                 }
+
+                MenuNav(ref MenuPos, CursorMax, userInput);
             }
         }
 
-            
-        //_menuStack.Push()
+        public void ChangePage(string ChangeToPage) {
+            CurrPage = GetPage(ChangeToPage);
+            _menuStack.Push(ChangeToPage);
+        }
 
-        public class Page {
-            protected List<MenuLine> DisplayPage;
-            public Page() {
-                DisplayPage = new List<MenuLine>();
+        public void RenderCursor(int MenuPos, Page CurrPage) {;
+            GameRender.AddToRender(CurrPage.CursorLocations[MenuPos].x, 
+                CurrPage.CursorLocations[MenuPos].y, "[-]");
+        }
+
+        public Page GoBack() {
+            Page Back = GetPage(_menuStack.Pop());
+            return Back;
+        }
+
+        public Page GetPage(string PageName) {
+            Page PageGet = Cache.Get(PageName);
+            if (PageGet != null) {
+                return PageGet;
             }
-            public void AddToPage(int x, int y, int YDistancing, string[] Lines) {
-                int displayX;
-                foreach (string Line in Lines) {
-                    //Center text in x-axis if x is -1
-                    if (x == -1) {
-                        displayX = (WinWidth / 2) - (Line.Length / 2);
+            else {
+                PageGet = PageCatalogue.Pages[PageName].Invoke();
+                Cache.Put(PageName, PageGet);
+                return PageGet;
+            }
+        }
+
+        public void MenuNav(ref int MenuPos, int CursorMax, ConsoleKeyInfo userInput) {
+            switch (userInput.Key) {
+                case ConsoleKey.UpArrow:
+                case ConsoleKey.W:
+                case ConsoleKey.NumPad8:
+                    if (MenuPos > 0) {
+                        MenuPos -= 1;
                     }
                     else {
-                        displayX = x;
+                        MenuPos = CursorMax - 1;
                     }
-                    DisplayPage.Add(new MenuLine(Line, displayX, y));
-                    y += YDistancing;
-                }
+                    break;
+                case ConsoleKey.DownArrow:
+                case ConsoleKey.S:
+                case ConsoleKey.NumPad2:
+                    if (MenuPos < CursorMax-1) {
+                        MenuPos += 1;
+                    }
+                    else {
+                        MenuPos = 0;
+                    }
+                    break;
+                case ConsoleKey.Enter:
+                    break;
             }
-            public void AddToDisplay(Frame_Buffer GameRender) {
-                foreach (MenuLine Line in DisplayPage) {
-                    GameRender.AddToRender(Line.XPos,Line.YPos,Line.Line);
+        }
+    }
+    public class Page {
+        private List<MenuLine> DisplayPage;
+        public CursorLocation[] CursorLocations { private set; get; }
+        public Page() {
+            DisplayPage = new List<MenuLine>();
+        }
+        public void AddToPage(int x, int y, int YDistancing, string[] Lines) {
+            int displayX;
+            foreach (string Line in Lines) {
+                //Center text in x-axis if x is -1
+                if (x == -1) {
+                    displayX = (ConsoleGame.WinWidth / 2) - (Line.Length / 2);
                 }
+                else {
+                    displayX = x;
+                }
+                DisplayPage.Add(new MenuLine(Line, displayX, y));
+                y += YDistancing;
             }
-            public struct CursorLocation {
-                int x;
-                int y;
+        }
+        public void AddToDisplay() {
+            foreach (MenuLine Line in DisplayPage) {
+                ConsoleGame.GameRender.AddToRender(Line.XPos, Line.YPos, Line.Line);
+            }
+        }
 
-                //Call this func if cursor is on Location and user hits enter.
-                //Func could call to a new page and add it to the stack or 
-                //The Func could start the game.
-                Delegate FuncToCall;
+        public void AddCursorLocs(int x, int y, int YDistancing, int numberOfCursors) {
+            CursorLocations = new CursorLocation[numberOfCursors];
+            for (int i = 0; i < numberOfCursors; i++) {
+                CursorLocations[i] = new CursorLocation { x = x,y = y+YDistancing*i};
             }
+        }
+
+        public struct CursorLocation {
+            public int x;
+            public int y;
         }
         public class MenuLine {
             public string Line;
@@ -77,7 +142,7 @@ namespace console_game
                     return _xPos;
                 }
                 set {
-                    if (value >= 0 & value < WinWidth-Line.Length) {
+                    if (value >= 0 & value < ConsoleGame.WinWidth - Line.Length) {
                         _xPos = value;
                     }
                     else {
@@ -89,7 +154,7 @@ namespace console_game
             public int YPos {
                 get { return _yPos; }
                 set {
-                    if (value >= 0 & value < WinHeight) {
+                    if (value >= 0 & value < ConsoleGame.WinHeight) {
                         _yPos = value;
                     }
                     else {
@@ -105,47 +170,75 @@ namespace console_game
                 this.YPos = YPos;
             }
         }
+    }
 
-        public void LoadPages() {
-            Pages = new Dictionary<string, Page>();
+    public interface IPageGroup {
+        IDictionary<string, Func<Page>> Pages { get; set; }
+        void RegisterPages();
+    }
 
-            //Create pages and add to dict. Potential change in future to only load pages into dict as needed.
-            //Perhaps use a simple LRU cache to store some pages? This is not needed but would be good learning exercise.
-            Page PageToAdd = new Page();
-            
-            PageToAdd.AddToPage(-1, 2, 0, new string[] { "No-Named-Game Menu" });
-            PageToAdd.AddToPage(5, 6, 3, new string[] {
+    class MenuPages : IPageGroup {
+        public IDictionary<string, Func<Page>> Pages { get; set; } = new Dictionary<string, Func<Page>>();
+
+        public MenuPages() {
+            RegisterPages();
+        }
+
+        public void RegisterPages() {
+            Pages.Add("Difficulty", LoadDifficulty);
+            Pages.Add("Home", LoadHome);
+            Pages.Add("Help", LoadHelp);
+        }
+
+        public Page LoadDifficulty() {
+            Page LoadPage = new Page();
+            LoadPage.AddToPage((int)Centering.middle, 2, 0, new string[] { "No-Named-Game Menu" });
+            LoadPage.AddToPage(5, 6, 3, new string[] {
+                            " -  Start Game",
+                            " -  Change Difficulty",
+                            " -  Help",
+                            " -  High Scores --- NOT IMPLEMENTED",
+                            " -  Exit Game"});
+            LoadPage.AddToPage((int)Centering.middle, ConsoleGame.WinHeight - 5, 1, new string[] {
+                            "Use arrow keys, WASD or numpad to navigate between options",
+                            "Press enter to select an option",
+                            "This page is broke in this dev build, hit enter to play game"});
+
+            return LoadPage;
+        }
+
+        public Page LoadHome() {
+            Page LoadPage = new Page();
+
+            LoadPage.AddToPage(-1, 2, 0, new string[] { "No-Named-Game Menu" });
+            LoadPage.AddToPage(5, 6, 3, new string[] {
                 " -  Start Game",
                 " -  Change Difficulty",
                 " -  Help",
                 " -  High Scores --- NOT IMPLEMENTED",
                 " -  Exit Game"});
-            PageToAdd.AddToPage(-1, WinHeight - 5, 1, new string[] {
+            LoadPage.AddToPage(-1, ConsoleGame.WinHeight - 5, 1, new string[] {
                 "Use arrow keys, WASD or numpad to navigate between options",
                 "Press enter to select an option",
                 "This page is broke in this dev build, hit enter to play game"});
-            Pages["Home"] = PageToAdd;
 
-            PageToAdd = new Page();
-            PageToAdd.AddToPage(-1, 2, 0, new string[] { "Difficulty Menu" });
-            PageToAdd.AddToPage(5, 6, 3, new string[] {
-                " -  Extreme Difficulty",
-                " -  Hard Difficulty",
-                " -  Medium Difficulty",
-                " -  Easy Difficulty",
-                " -  <-- Go Back"});
-            Pages["Difficulty"] = PageToAdd;
+            //X, Y, Y Distance between each cursor adding from initial Y, Amount
+            LoadPage.AddCursorLocs(5, 6, 3, 5);
+            return LoadPage;
+        }
 
-            PageToAdd = new Page();
-            PageToAdd.AddToPage(-1, 2, 0, new string[] { "Help Menu" });
-            PageToAdd.AddToPage(5, 6, 3, new string[] {
+        public Page LoadHelp() {
+            Page LoadPage = new Page();
+
+            LoadPage.AddToPage(-1, 2, 0, new string[] { "Help Menu" });
+            LoadPage.AddToPage(5, 6, 3, new string[] {
                 " -  You are the \"@\" symbol",
                 " -  Avoid the enemy X symbols",
                 " -  If you touch an enemy X, game over",
                 " -  Move using arrow keys, WASD or numpad",
                 " -  <-- Go Back"});
-            Pages["Help"] = PageToAdd;
 
+            return LoadPage;
         }
-    }
+    }   
 }

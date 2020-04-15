@@ -5,6 +5,8 @@ namespace console_game
 {
     class Game
     {
+        public int WinWidth;
+        public int WinHeight;
         private string DifficultyText;
         private Frame_Buffer GameRender;
         public Game(int winWidth, int winHeight, int Difficulty, Frame_Buffer GameRender)
@@ -26,9 +28,6 @@ namespace console_game
             }
             enemyUnits = new Unit[enemyNum];
         }
-
-        public static int WinWidth;
-        public static int WinHeight { private set; get; }
         public static Random Random;
         public static int Score;
         private Stopwatch stopwatch;
@@ -47,9 +46,10 @@ namespace console_game
             long timeAtPreviousFrame = stopwatch.ElapsedMilliseconds;
             int desiredFPS = 144;
             int desiredFPSTiming = 1000 / desiredFPS;
+            int frameTimingMS;
             while (true)
             {
-                int frameTimingMS = (int)(stopwatch.ElapsedMilliseconds - timeAtPreviousFrame);
+                frameTimingMS = (int)(stopwatch.ElapsedMilliseconds - timeAtPreviousFrame);
                 timeAtPreviousFrame = stopwatch.ElapsedMilliseconds;
 
                 playerUnit.Update(frameTimingMS);
@@ -92,6 +92,8 @@ namespace console_game
             GameRender.AddToRender(0, WinHeight / 3, "Press Enter to play again", "middle");
             GameRender.AddToRender(0, WinHeight * 2 / 3 - 2, "Press Escape to exit game", "middle");
             GameRender.PrintFrame();
+            Score = 0;
+            Console.ReadKey();
         }
     }
 }

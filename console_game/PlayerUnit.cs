@@ -32,7 +32,7 @@ namespace console_game
                     case ConsoleKey.DownArrow:
                     case ConsoleKey.S:
                     case ConsoleKey.NumPad2:
-                        if (Y < Game.WinHeight - 2)
+                        if (Y < ConsoleGame.WinHeight - 2)
                         {
                             Y = Y + 1;
                         }
@@ -48,7 +48,7 @@ namespace console_game
                     case ConsoleKey.RightArrow:
                     case ConsoleKey.D:
                     case ConsoleKey.NumPad6:
-                        if (X < Game.WinWidth - 1)
+                        if (X < ConsoleGame.WinWidth - 1)
                         {
                             X = X + 1;
                         }
