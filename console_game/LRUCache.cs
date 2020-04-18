@@ -7,12 +7,12 @@ namespace console_game {
         private const int NotFound = -1;
         private int _count;
         private readonly int _capacity;
-        private readonly LinkedList<CacheItem<T>> _items;
-        private readonly Dictionary<string, LinkedListNode<CacheItem<T>>> _keys;
+        private readonly LinkedList<CacheItem> _items;
+        private readonly Dictionary<string, LinkedListNode<CacheItem>> _keys;
 
         public LRUCache(int capacity) {
-            _items = new LinkedList<CacheItem<T>>();
-            _keys = new Dictionary<string, LinkedListNode<CacheItem<T>>>(capacity);
+            _items = new LinkedList<CacheItem>();
+            _keys = new Dictionary<string, LinkedListNode<CacheItem>>(capacity);
             _count = 0;
             _capacity = capacity;
         }
@@ -36,7 +36,7 @@ namespace console_game {
         public void Put(string key, T value) {
             if (!_keys.ContainsKey(key)) {
                 // add
-                _keys[key] = _items.AddFirst(new CacheItem<T>(key, value));
+                _keys[key] = _items.AddFirst(new CacheItem(key, value));
 
                 if (_count == _capacity) {
                     // remove least recently used
@@ -61,7 +61,7 @@ namespace console_game {
             }
         }
 
-        private class CacheItem<T> {
+        private class CacheItem {
             public CacheItem (string key, T value) {
                 Key = key;
                 Value = value;

@@ -8,10 +8,8 @@ namespace console_game
         public int WinWidth;
         public int WinHeight;
         private string DifficultyText;
-        private Frame_Buffer GameRender;
-        public Game(int winWidth, int winHeight, int Difficulty, Frame_Buffer GameRender)
+        public Game(int winWidth, int winHeight, int Difficulty)
         {
-            this.GameRender = GameRender;
             playerUnit = new PlayerUnit(5, (int)(Console.WindowHeight / 2 - 2), "@");
             Random = new Random();
             stopwatch = new Stopwatch();
@@ -65,17 +63,17 @@ namespace console_game
                     }
                 }
 
-                GameRender.AddToRender(playerUnit.X, playerUnit.Y, playerUnit.UnitGraphic);
+                Frame_Buffer.AddToRender(playerUnit.X, playerUnit.Y, playerUnit.UnitGraphic);
                 foreach (EnemyUnit enemyUnit in enemyUnits)
                 {
                     if (enemyUnit.SleepForMS <= 0)
                     {
-                        GameRender.AddToRender(enemyUnit.X, enemyUnit.Y, enemyUnit.UnitGraphic);
+                        Frame_Buffer.AddToRender(enemyUnit.X, enemyUnit.Y, enemyUnit.UnitGraphic);
                     }
                 }
-                GameRender.AddToRender(0, WinHeight - 1, "SCORE: " + Score);
-                GameRender.AddToRender(0, WinHeight - 1, "Difficulty: " + DifficultyText, "right");
-                GameRender.PrintFrame();
+                Frame_Buffer.AddToRender(0, WinHeight - 1, "SCORE: " + Score);
+                Frame_Buffer.AddToRender(0, WinHeight - 1, "Difficulty: " + DifficultyText, "right");
+                Frame_Buffer.PrintFrame();
 
                 if (desiredFPSTiming - frameTimingMS > 0)
                 {
@@ -86,12 +84,12 @@ namespace console_game
         void GameOver()
         {
             //Menu.Scores.CheckScores(Score,Difficulty);
-            GameRender.AddToRender(0, WinHeight / 2, "Final score " + Score, "middle");
-            GameRender.AddToRender(0, WinHeight / 2 - 1, "Difficulty: " + DifficultyText, "middle");
-            GameRender.AddToRender(0, WinHeight / 2 - 2, "Game Over!", "middle");
-            GameRender.AddToRender(0, WinHeight / 3, "Press Enter to play again", "middle");
-            GameRender.AddToRender(0, WinHeight * 2 / 3 - 2, "Press Escape to exit game", "middle");
-            GameRender.PrintFrame();
+            Frame_Buffer.AddToRender(0, WinHeight / 2, "Final score " + Score, "middle");
+            Frame_Buffer.AddToRender(0, WinHeight / 2 - 1, "Difficulty: " + DifficultyText, "middle");
+            Frame_Buffer.AddToRender(0, WinHeight / 2 - 2, "Game Over!", "middle");
+            Frame_Buffer.AddToRender(0, WinHeight / 3, "Press Enter to play again", "middle");
+            Frame_Buffer.AddToRender(0, WinHeight * 2 / 3 - 2, "Press Escape to exit game", "middle");
+            Frame_Buffer.PrintFrame();
             Score = 0;
             Console.ReadKey();
         }

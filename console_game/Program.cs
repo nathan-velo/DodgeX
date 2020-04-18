@@ -2,16 +2,11 @@
 
 namespace console_game
 {
-    public enum Centering {
-        left = 0,
-        middle = -1,
-    }
     class ConsoleGame
     {
 
         public static int WinWidth;
         public static int WinHeight;
-        public static Frame_Buffer GameRender;
         static void Main()
         {
             // Sets window size
@@ -26,11 +21,12 @@ namespace console_game
             Console.SetWindowSize(WinWidth, WinHeight);
             Console.CursorVisible = false;
 
-            GameRender = new Frame_Buffer(WinWidth, WinHeight);
+            //Set up environment variables for the frame buffer.
+            Frame_Buffer.SetUpBuffer(WinWidth, WinHeight);
 
-            //Run the game, game and menu loop
-            Menu<MenuPages> GameMenu = new Menu<MenuPages>(GameRender);
-            Game game = new Game(WinWidth, WinHeight, 200, GameRender);
+            //Run the general game loop
+            Menu<MenuPages> GameMenu = new Menu<MenuPages>();
+            Game game = new Game(WinWidth, WinHeight, 200);
             while (true) {
                 bool playGame = GameMenu.StartMenu();
                 if (!playGame) {
@@ -61,6 +57,4 @@ namespace console_game
         }
 
     }
-
-
 }

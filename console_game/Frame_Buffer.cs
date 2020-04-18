@@ -7,25 +7,28 @@ using System.Diagnostics;
 
 namespace console_game
 {
-    class Frame_Buffer
+    static class Frame_Buffer
     {
-        public int WinWidth { private set; get; }
-        public int WinHeight { private set; get; }
-        private char[,] Frame;
-        string NewFrame;
-        public Frame_Buffer(int Width, int Height)
-        {
-            WinWidth = Width;
-            WinHeight = Height;
-            Frame = new char[WinWidth, WinHeight];
+        public static int WinWidth { set; get; }
+        public static int WinHeight { set; get; }
+        private static char[,] Frame;
+        static string NewFrame;
+
+        public static void SetUpBuffer(int WinWidth, int WinHeight) {
+            Frame_Buffer.WinWidth = WinWidth;
+            Frame_Buffer.WinHeight = WinHeight;
+            Frame = new char[WinWidth,WinHeight];
         }
 
-        public void AddToRender(int x, int y, string textForFrame, string Centering = "none")
+        public static void AddToRender(int x, int y, string textForFrame, string Centering = "none")
         {
+            //If string 1 char long put char at x,y
             if (textForFrame.Length == 1)
             {
                 Frame[x, y] = Convert.ToChar(textForFrame);
             }
+            //If string longer then 1 char convert to array and
+            //add to frame array one char at a time
             else if (textForFrame.Length > 1)
             {
                 char[] charForFrame = textForFrame.ToCharArray();
@@ -50,9 +53,10 @@ namespace console_game
             else { Debug.WriteLine("String of size 0 passed to frame buffer"); }
         }
 
-        public void PrintFrame()
+        public static void PrintFrame()
         {
             NewFrame = string.Empty;
+            //Loop through frame array and create string from it.
             for (int y = 0; y < WinHeight; y++)
             {
                 for (int x = 0; x < WinWidth; x++)
@@ -66,8 +70,12 @@ namespace console_game
                 }
             }
             Console.CursorVisible = false;
+
+            //Set console cursor to 0 position on screen and print string
             Console.SetCursorPosition(0, 0);
             Console.Write(NewFrame);
+
+            //Clear Frame array.
             Array.Clear(Frame, 0, Frame.Length);
         }
     }
