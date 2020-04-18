@@ -23,14 +23,17 @@ namespace console_game
 
         public override void Update(int frameTimingMS)
         {
-
+            //Stagger initial movement of enemy units
             SleepForMS -= frameTimingMS;
             if (SleepForMS > 0)
             {
                 return;
             }
+
+
             timeSinceLastMove += frameTimingMS;
 
+            //If enough time has not elapsed for the unit to move again exit.
             if (timeSinceLastMove < TimeBetweenMoves)
             {
                 return;
@@ -41,10 +44,13 @@ namespace console_game
             {
                 X = X - 1;
             }
+            //If unit is off to the left of screen place back
+            //To the right off the screen randomly,
+            //Increase movement speed and game score.
             else
             {
                 X = Width;
-                Y = Game.Random.Next(0, Height);
+                Y = Game.Random.Next(0, ConsoleGame.WinHeight-1);
 
                 SleepForMS = Game.Random.Next(0, 1500);
                 if (TimeBetweenMoves > 30)
